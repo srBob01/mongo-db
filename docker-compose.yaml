@@ -1,0 +1,31 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: expense_tracker
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - mongo_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js  # Автоматический запуск скрипта
+
+
+  app:
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    restart: always
+    environment:
+      MONGO_URI: mongodb://admin:secret@mongodb:27017/expense_tracker
+      SERVER_PORT: 8081
+
+volumes:
+  mongo_data:
